@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 
 const JWT_SECRET = "Brijishaisaverygood$girl";
 
-//Create a User using: POST "/api/auth/createuser" . Doesn't require auth. No login required.
+//Route-1 Create a User using: POST "/api/auth/createuser" . Doesn't require auth. No login required.
 router.post(
   "/createuser",
   [
@@ -63,9 +63,59 @@ router.post(
       res.json({ authToken });
     } catch (error) {
       console.log(error.message);
-      res.status(500).send("Some error occured");
+      res.status(500).send("Internal server error occured");
     }
   }
 );
+
+//Route-2 Authenticate a User using : POST "/api/auth/login". No logon required
+router.post(
+  "/login",
+  [
+    body("email", "Enter a valid email").isEmail(),
+    body("password", "Password cannot be blank").exists(),
+  ],
+  async (req, res) => {
+    //If there are errors, return Bad request and errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password } = req.body;
+    try {
+      let user = await User.findOne({ email });
+      if (!user) {
+        return res
+          .status(400)
+          .json({ error: "Please try to login with correct credintials" });
+      }
+
+      //compare password
+      const passwordCompare = await bcrypt.compare(password, user.password);
+
+      //Password is not matched
+      if (!passwordCompare) {
+        return res
+          .status(400)
+          .json({ error: "Please try to login with correct credintials" });
+      }
+      //Password is  matched
+      const data = {
+        user: {
+          id: user.id,
+        },
+      };
+      const authToken = jwt.sign(data, JWT_SECRET);
+      //Send authToken in responese instead of user
+      res.json({ authToken });
+    } catch (error) {
+      console.log(error.message);
+      res.status(500).send("Internal server error occured");
+    }
+  }
+);
+
+//Route-3
 
 module.exports = router;
