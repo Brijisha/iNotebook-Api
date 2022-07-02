@@ -4,8 +4,8 @@ const router = express.Router();
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
 const JWT_SECRET = "Brijishaisaverygood$girl";
+const fetchuser = require("../middleware/fetchuser");
 
 //Route-1 Create a User using: POST "/api/auth/createuser" . Doesn't require auth. No login required.
 router.post(
@@ -116,6 +116,15 @@ router.post(
   }
 );
 
-//Route-3
-
+//Route-3 Get Loggedin User details using :POST "api/auth/getuser". Login requires
+router.post("/getuser", fetchuser, async (req, res) => {
+  try {
+    userId = req.user.id;
+    const user = await User.findById(userId).select("-password");
+    res.send(user);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send("Internal server error occured");
+  }
+});
 module.exports = router;
