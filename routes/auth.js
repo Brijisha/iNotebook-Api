@@ -117,7 +117,7 @@ router.post(
 );
 
 //Route-3 Get Loggedin User details using :POST "api/auth/getuser". Login requires
-router.post("/getuser", fetchuser, async (req, res) => {
+router.get("/getuser", fetchuser, async (req, res) => {
   try {
     userId = req.user.id;
     const user = await User.findById(userId).select("-password");
