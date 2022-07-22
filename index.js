@@ -1,9 +1,12 @@
 const conectToMongo = require("./db");
 const express = require("express");
+const cors = require("cors");
 
 conectToMongo();
 
 const app = express();
+// Use cors on all routes and allow access only from
+app.use(cors());
 const port = 3001;
 
 //To get query from re.body
@@ -18,5 +21,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`iNotebook backend listening at http://localhost:${port}`);
 });
