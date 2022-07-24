@@ -76,6 +76,7 @@ router.post(
     body("password", "Password cannot be blank").exists(),
   ],
   async (req, res) => {
+    let success = false;
     //If there are errors, return Bad request and errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -86,9 +87,10 @@ router.post(
     try {
       let user = await User.findOne({ email });
       if (!user) {
-        return res
-          .status(400)
-          .json({ error: "Please try to login with correct credintials" });
+        return res.status(400).json({
+          success,
+          error: "Please try to login with correct credintials",
+        });
       }
 
       //compare password
@@ -96,9 +98,10 @@ router.post(
 
       //Password is not matched
       if (!passwordCompare) {
-        return res
-          .status(400)
-          .json({ error: "Please try to login with correct credintials" });
+        return res.status(400).json({
+          success,
+          error: "Please try to login with correct credintials",
+        });
       }
       //Password is  matched
       const data = {
@@ -108,7 +111,7 @@ router.post(
       };
       const authToken = jwt.sign(data, JWT_SECRET);
       //Send authToken in responese instead of user
-      sucess = true;
+      success = true;
       res.json({ success, authToken });
     } catch (error) {
       console.log(error.message);
