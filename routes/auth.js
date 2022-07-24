@@ -18,19 +18,21 @@ router.post(
     }),
   ],
   async (req, res) => {
+    let success = false;
     // If there are errors , return bad request and the errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ success, errors: errors.array() });
     }
 
     // Check whether user with this email exists already
     try {
       let user = await User.findOne({ email: req.body.email });
       if (user) {
-        return res
-          .status(400)
-          .json({ error: "Sorry a user with this email is already exists" });
+        return res.status(400).json({
+          success,
+          error: "Sorry a user with this email is already exists",
+        });
       }
 
       //Hash password which is passed in body
@@ -56,14 +58,15 @@ router.post(
 
       // jwt.sign method takes user data (id here) and jwt secrete key to generate token
       const authToken = jwt.sign(data, JWT_SECRET);
-      console.log(authToken);
+      success = true;
+      console.log({ success, authToken });
       //res.json(user);
 
       //Send authToken in responese instead of user
-      res.json({ authToken });
+      return res.json({ success, authToken });
     } catch (error) {
       console.log(error.message);
-      res.status(500).send("Internal server error occured");
+      return res.status(500).send("Internal server error occured");
     }
   }
 );
@@ -109,13 +112,14 @@ router.post(
           id: user.id,
         },
       };
+      success = true;
+
       const authToken = jwt.sign(data, JWT_SECRET);
       //Send authToken in responese instead of user
-      success = true;
-      res.json({ success, authToken });
+      return res.json({ success, authToken });
     } catch (error) {
       console.log(error.message);
-      res.status(500).send("Internal server error occured");
+      return res.status(500).send("Internal server error occured");
     }
   }
 );
@@ -128,7 +132,7 @@ router.get("/getuser", fetchuser, async (req, res) => {
     res.send(user);
   } catch (error) {
     console.log(error.message);
-    res.status(500).send("Internal server error occured");
+    return res.status(500).send("Internal server error occured");
   }
 });
 module.exports = router;
